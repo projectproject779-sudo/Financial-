@@ -1,0 +1,14 @@
+import type { Metadata } from "next";
+import { ContentPage } from "../../components/ContentPage";
+
+export const metadata: Metadata = { title: "Privacy Policy", description: "How Numora handles calculator inputs, technical logs, cookies, and third-party services.", alternates: { canonical: "/privacy" } };
+
+export default function Page() {
+  return <ContentPage eyebrow="Legal" title="Privacy policy" lede="Numora is designed so you can use its calculators without creating an account or sending us the financial numbers you enter.">
+    <p className="updated">Last updated: August 9, 2026</p>
+    <h2>Calculator data</h2><p>Calculator inputs and results are processed in your browser. Numora does not intentionally collect or store the amounts, rates, goals, or currencies you enter into a calculator.</p>
+    <h2>Technical information</h2><p>Our hosting provider may process standard technical logs such as IP address, device type, requested pages, and timestamps to deliver, secure, and maintain the service.</p>
+    <h2>Analytics and advertising</h2><p>Numora currently does not require advertising or analytics cookies. If third-party analytics, advertising, or affiliate tools are added, this policy and any required consent controls will be updated before they are enabled.</p>
+    <h2>Your choices</h2><p>You can use the core calculators without an account. Browser controls may be used to clear any locally stored site data.</p>
+  </ContentPage>;
+}
