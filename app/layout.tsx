@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { DM_Sans, Manrope } from "next/font/google";
+import { ConsentManager } from "../components/ConsentManager";
 import "./globals.css";
 
 const bodyFont = DM_Sans({ variable: "--font-body", subsets: ["latin"] });
@@ -42,6 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
     icons: { icon: "/og.png", apple: "/og.png" },
     alternates: { canonical: "/" },
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } : undefined,
   };
 }
 
@@ -50,6 +52,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
         {children}
+        <ConsentManager gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} adsenseClient={process.env.NEXT_PUBLIC_ADSENSE_CLIENT} />
       </body>
     </html>
   );

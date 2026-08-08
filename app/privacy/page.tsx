@@ -8,7 +8,7 @@ export default function Page() {
     <p className="updated">Last updated: August 9, 2026</p>
     <h2>Calculator data</h2><p>Calculator inputs and results are processed in your browser. Numora does not intentionally collect or store the amounts, rates, goals, or currencies you enter into a calculator.</p>
     <h2>Technical information</h2><p>Our hosting provider may process standard technical logs such as IP address, device type, requested pages, and timestamps to deliver, secure, and maintain the service.</p>
-    <h2>Analytics and advertising</h2><p>Numora currently does not require advertising or analytics cookies. If third-party analytics, advertising, or affiliate tools are added, this policy and any required consent controls will be updated before they are enabled.</p>
-    <h2>Your choices</h2><p>You can use the core calculators without an account. Browser controls may be used to clear any locally stored site data.</p>
+    <h2>Analytics and advertising</h2><p>Google Analytics and approved Google advertising are disabled unless the site owner configures valid account identifiers and you choose to accept analytics. If enabled with consent, those providers may process device, usage, cookie, or advertising data under their own policies. Calculator input values are not intentionally sent as analytics events.</p>
+    <h2>Your choices</h2><p>You can use the core calculators without an account and choose “Essential only” when optional tools are configured. Your choice is stored locally under <code>numora-consent</code>; clear site data to reset it.</p>
   </ContentPage>;
 }

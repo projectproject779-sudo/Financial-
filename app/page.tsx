@@ -66,13 +66,13 @@ export default function Home() {
               <h1>Make your money<br />make <em>sense.</em></h1>
               <p className="hero-lede">Free, private financial calculators that turn complicated decisions into clear next steps — wherever you live.</p>
               <div className="hero-actions">
-                <a className="button primary" href="#calculators">Calculate for free <span>→</span></a>
+                <Link className="button primary" href="/calculators">Explore 24 calculators <span>→</span></Link>
                 <a className="text-link" href="#how-it-works">See how it works</a>
               </div>
               <div className="trust-row">
-                <span><b>5</b> calculators</span>
+                <span><b>24</b> calculators</span>
                 <i />
-                <span><b>8</b> currencies</span>
+                <span><b>13</b> currencies</span>
                 <i />
                 <span><b>0</b> sign-ups</span>
               </div>
@@ -119,7 +119,7 @@ export default function Home() {
           <div className="shell">
             <div className="section-heading-row">
               <div><p className="eyebrow">Explore every tool</p><h2>A calculator for each decision</h2></div>
-              <p>Purpose-built tools with clear explanations and no unnecessary complexity.</p>
+              <p>Start with five popular tools, or search the complete library of 24 transparent calculators.</p>
             </div>
             <div className="tool-card-grid">
               {toolCards.map((card) => (
@@ -131,6 +131,14 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+            <div className="section-action"><Link className="button primary" href="/calculators">Search all 24 calculators <span>→</span></Link></div>
+          </div>
+        </section>
+
+        <section className="country-preview-section">
+          <div className="shell">
+            <div className="section-heading-row"><div><p className="eyebrow">Global tools, local context</p><h2>Start from where you live</h2></div><p>Local currency defaults, practical checklists, and official source links for five major markets.</p></div>
+            <div className="country-mini-grid">{[["US", "United States", "united-states"], ["UK", "United Kingdom", "united-kingdom"], ["CA", "Canada", "canada"], ["AU", "Australia", "australia"], ["IN", "India", "india"]].map(([code, name, slug]) => <Link href={`/countries/${slug}`} key={slug}><span>{code}</span><b>{name}</b><i>→</i></Link>)}</div>
           </div>
         </section>
 
@@ -162,7 +170,7 @@ export default function Home() {
           <div className="shell">
             <div className="section-heading-row">
               <div><p className="eyebrow">Money, explained</p><h2>Practical guides for smarter planning</h2></div>
-              <span className="coming-label">More guides added regularly</span>
+              <Link className="text-link" href="/guides">View all 11 guides</Link>
             </div>
             <div className="guide-grid">
               <article className="guide-card featured">
@@ -206,7 +214,7 @@ export default function Home() {
         <section className="final-cta" id="about">
           <div className="shell final-cta-inner">
             <div><p className="eyebrow">Your next decision starts here</p><h2>Turn uncertainty into a number you can use.</h2></div>
-            <a className="button light" href="#calculators">Try a free calculator <span>→</span></a>
+            <Link className="button light" href="/calculators">Try a free calculator <span>→</span></Link>
           </div>
         </section>
       </main>

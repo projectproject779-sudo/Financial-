@@ -33,6 +33,34 @@ test("server-renders a dedicated calculator route", async () => {
   assert.match(html, /Plan a home purchase/);
 });
 
+test("server-renders the scalable calculator library and live model", async () => {
+  const library = await render("/calculators");
+  assert.equal(library.status, 200);
+  const libraryHtml = await library.text();
+  assert.match(libraryHtml, /24 free planning tools/i);
+  assert.match(libraryHtml, /Debt payoff/);
+  assert.match(libraryHtml, /FIRE number/);
+
+  const calculator = await render("/calculators/credit-card-payoff");
+  assert.equal(calculator.status, 200);
+  const calculatorHtml = await calculator.text();
+  assert.match(calculatorHtml, /Credit card payoff calculator/);
+  assert.match(calculatorHtml, /Official sources/);
+  assert.match(calculatorHtml, /Formula and assumptions disclosed/);
+});
+
+test("publishes local country context and in-depth guides", async () => {
+  const country = await render("/countries/india");
+  assert.equal(country.status, 200);
+  assert.match(await country.text(), /Clearer money decisions in[\s\S]*India/);
+
+  const guide = await render("/insights/compare-loans-by-total-cost");
+  assert.equal(guide.status, 200);
+  const guideHtml = await guide.text();
+  assert.match(guideHtml, /like-for-like comparison/i);
+  assert.match(guideHtml, /Numora Editorial Team/);
+});
+
 test("publishes trust content and security headers", async () => {
   const response = await render("/methodology");
   assert.equal(response.status, 200);
@@ -55,4 +83,7 @@ test("serves crawler discovery files", async () => {
   const sitemap = await sitemapResponse.text();
   assert.match(sitemap, /\/loan-calculator/);
   assert.match(sitemap, /\/methodology/);
+  assert.match(sitemap, /\/calculators\/fire-number/);
+  assert.match(sitemap, /\/countries\/australia/);
+  assert.match(sitemap, /\/insights\/inflation-and-real-returns/);
 });

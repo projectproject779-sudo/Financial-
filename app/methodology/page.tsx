@@ -22,6 +22,6 @@ export default function Page() {
     <div className="guide-callout">A calculator is a scenario model. Your real outcome depends on provider rules, timing, fees, taxes, and market conditions.</div>
     <h2>Quality and corrections</h2>
     <p>Core routes are checked through automated server-rendering tests and production builds before publication. Material formula or disclosure changes are documented through the site’s version history and reflected on this page.</p>
-    <p><Link className="text-link" href="/#calculators">Return to the calculators →</Link></p>
+    <p><Link className="text-link" href="/calculators">Explore all 24 calculators →</Link></p>
   </ContentPage>;
 }

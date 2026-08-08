@@ -11,12 +11,12 @@ export function SiteHeader() {
           <span>Numora</span>
         </Link>
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/#calculators">Calculators</Link>
-          <Link href="/#how-it-works">How it works</Link>
-          <Link href="/#guides">Money guides</Link>
-          <Link href="/methodology">Methodology</Link>
+          <Link href="/calculators">Calculators</Link>
+          <Link href="/countries">Countries</Link>
+          <Link href="/guides">Money guides</Link>
+          <Link href="/editorial-policy">Trust center</Link>
         </nav>
-        <Link className="header-cta" href="/#calculators">Start calculating</Link>
+        <Link className="header-cta" href="/calculators">Find a calculator</Link>
       </div>
     </header>
     </>
