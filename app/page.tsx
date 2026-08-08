@@ -9,21 +9,12 @@ export const metadata: Metadata = {
   description: "Calculate loans, mortgages, compound interest, savings goals, and investment returns in seconds. Free, private, and built for a global audience.",
 };
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Numora Financial Calculators",
-  applicationCategory: "FinanceApplication",
-  operatingSystem: "Any",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  description: "Free global calculators for loans, mortgages, compound interest, savings goals, and investment returns.",
-};
-
 const toolCards = [
   { href: "/loan-calculator", short: "LN", title: "Loan calculator", copy: "Estimate monthly payments, interest, and total cost.", tone: "blue" },
   { href: "/mortgage-calculator", short: "MT", title: "Mortgage calculator", copy: "Plan a home purchase and compare repayment terms.", tone: "green" },
   { href: "/compound-interest-calculator", short: "CI", title: "Compound interest", copy: "See what steady contributions can become over time.", tone: "orange" },
   { href: "/savings-goal-calculator", short: "SG", title: "Savings goal", copy: "Turn a future target into a monthly action plan.", tone: "purple" },
+  { href: "/investment-return-calculator", short: "IR", title: "Investment return", copy: "Project a portfolio across different time and return scenarios.", tone: "lime" },
 ];
 
 const faqs = [
@@ -33,11 +24,39 @@ const faqs = [
   ["Are the estimates financial advice?", "No. Results are educational estimates. Confirm rates, fees, taxes, and terms with a qualified professional or provider in your country."],
 ];
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "Numora",
+      description: "Free global financial calculators and plain-English money guides.",
+    },
+    {
+      "@type": "WebApplication",
+      name: "Numora Financial Calculators",
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires JavaScript",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      description: "Free calculators for loans, mortgages, compound interest, savings goals, and investment returns.",
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: faqs.map(([question, answer]) => ({
+        "@type": "Question",
+        name: question,
+        acceptedAnswer: { "@type": "Answer", text: answer },
+      })),
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main-content">
         <section className="hero">
           <div className="hero-orb orb-one" aria-hidden="true" />
           <div className="hero-orb orb-two" aria-hidden="true" />

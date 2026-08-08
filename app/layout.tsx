@@ -36,6 +36,11 @@ export async function generateMetadata(): Promise<Metadata> {
       description: "Free, private financial calculators for clear money decisions.",
       images: [`${baseUrl}/og.png`],
     },
+    category: "finance",
+    creator: "Numora",
+    publisher: "Numora",
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
+    icons: { icon: "/og.png", apple: "/og.png" },
     alternates: { canonical: "/" },
   };
 }

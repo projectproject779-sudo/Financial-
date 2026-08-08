@@ -32,3 +32,27 @@ test("server-renders a dedicated calculator route", async () => {
   assert.match(html, /Mortgage calculator/);
   assert.match(html, /Plan a home purchase/);
 });
+
+test("publishes trust content and security headers", async () => {
+  const response = await render("/methodology");
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("x-frame-options"), "SAMEORIGIN");
+  const html = await response.text();
+  assert.match(html, /How Numora calculations work/);
+  assert.match(html, /fixed-rate amortization formula/);
+});
+
+test("serves crawler discovery files", async () => {
+  const robotsResponse = await render("/robots.txt");
+  assert.equal(robotsResponse.status, 200);
+  const robots = await robotsResponse.text();
+  assert.match(robots, /Allow: \//);
+  assert.match(robots, /Sitemap: http:\/\/localhost:3000\/sitemap\.xml/);
+
+  const sitemapResponse = await render("/sitemap.xml");
+  assert.equal(sitemapResponse.status, 200);
+  const sitemap = await sitemapResponse.text();
+  assert.match(sitemap, /\/loan-calculator/);
+  assert.match(sitemap, /\/methodology/);
+});

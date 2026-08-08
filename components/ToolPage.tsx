@@ -36,7 +36,7 @@ export function ToolPage({ tool }: { tool: ToolId }) {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main-content">
         <section className="tool-hero">
           <div className="shell tool-hero-inner">
             <div>

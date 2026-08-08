@@ -55,7 +55,7 @@ function Field({
 }) {
   const safeChange = (raw: string) => {
     const next = Number(raw);
-    if (Number.isFinite(next)) onChange(next);
+    if (Number.isFinite(next)) onChange(Math.min(max, Math.max(min, next)));
   };
 
   return (
@@ -69,6 +69,7 @@ function Field({
           min={min}
           max={max}
           step={step}
+          inputMode="decimal"
           value={value}
           onChange={(event) => safeChange(event.target.value)}
         />
@@ -98,6 +99,7 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
   const [deposit, setDeposit] = useState(10000);
   const [monthly, setMonthly] = useState(500);
   const [goal, setGoal] = useState(50000);
+  const [copyStatus, setCopyStatus] = useState("Copy result");
 
   const currency = currencies.find((item) => item.code === currencyCode) ?? currencies[0];
   const money = (value: number, digits = 0) => new Intl.NumberFormat(currency.locale, {
@@ -176,6 +178,29 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
       setRate(7);
       setYears(10);
     }
+    setCopyStatus("Copy result");
+  };
+
+  const handleTabKey = (event: React.KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const direction = event.key === "ArrowRight" ? 1 : -1;
+    const nextIndex = (currentIndex + direction + tools.length) % tools.length;
+    const next = tools[nextIndex];
+    switchTool(next.id);
+    document.getElementById(`tool-tab-${next.id}`)?.focus();
+  };
+
+  const copyResult = async () => {
+    const toolName = tools.find((item) => item.id === tool)?.label ?? "Financial";
+    const summary = `${toolName} estimate from Numora: ${result.heroLabel} — ${money(result.hero, 0)}. Educational estimate only.`;
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopyStatus("Copied");
+      window.setTimeout(() => setCopyStatus("Copy result"), 1800);
+    } catch {
+      setCopyStatus("Copy unavailable");
+    }
   };
 
   const isDebt = tool === "loan" || tool === "mortgage";
@@ -184,13 +209,17 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
   return (
     <div className="calculator-card">
       <div className="tool-tabs" role="tablist" aria-label="Choose a calculator">
-        {tools.map((item) => (
+        {tools.map((item, index) => (
           <button
             className={tool === item.id ? "tool-tab active" : "tool-tab"}
+            id={`tool-tab-${item.id}`}
             key={item.id}
             onClick={() => switchTool(item.id)}
+            onKeyDown={(event) => handleTabKey(event, index)}
             role="tab"
             aria-selected={tool === item.id}
+            aria-controls="calculator-panel"
+            tabIndex={tool === item.id ? 0 : -1}
           >
             <span className="tab-icon" aria-hidden="true">{item.short}</span>
             <span>{item.label}</span>
@@ -198,7 +227,7 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
         ))}
       </div>
 
-      <div className="calc-grid">
+      <div className="calc-grid" id="calculator-panel" role="tabpanel" aria-labelledby={`tool-tab-${tool}`}>
         <div className="calc-controls">
           <div className="calc-heading-row">
             <div>
@@ -215,7 +244,7 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
 
           {isDebt ? (
             <>
-              <Field label={tool === "mortgage" ? "Home price / mortgage amount" : "Loan amount"} value={amount} min={1000} max={tool === "mortgage" ? 2000000 : 250000} step={1000} suffix={currency.symbol} onChange={setAmount} />
+              <Field label={tool === "mortgage" ? "Mortgage principal" : "Loan amount"} value={amount} min={1000} max={tool === "mortgage" ? 2000000 : 250000} step={1000} suffix={currency.symbol} onChange={setAmount} />
               <Field label="Annual interest rate" value={rate} min={0} max={35} step={0.1} suffix="%" onChange={setRate} />
               <Field label="Loan term" value={years} min={1} max={tool === "mortgage" ? 40 : 15} step={1} suffix="years" onChange={setYears} />
             </>
@@ -252,6 +281,10 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
               </div>
             ))}
           </dl>
+          <div className="result-actions">
+            <button type="button" onClick={() => void copyResult()}>{copyStatus}</button>
+            <button type="button" onClick={() => window.print()}>Print / save</button>
+          </div>
           <p className="result-disclaimer">Illustrative estimate. Rates, fees, taxes, and compounding rules vary by provider and country.</p>
         </aside>
       </div>

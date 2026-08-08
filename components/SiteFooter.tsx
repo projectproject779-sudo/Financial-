@@ -18,11 +18,13 @@ export function SiteFooter() {
           <Link href="/mortgage-calculator">Mortgage calculator</Link>
           <Link href="/compound-interest-calculator">Compound interest</Link>
           <Link href="/savings-goal-calculator">Savings goal</Link>
+          <Link href="/investment-return-calculator">Investment return</Link>
         </div>
         <div>
           <p className="footer-title">Company</p>
-          <a href="/#about">About Numora</a>
-          <a href="/#guides">Money guides</a>
+          <Link href="/about">About Numora</Link>
+          <Link href="/methodology">Methodology</Link>
+          <Link href="/#guides">Money guides</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
         </div>

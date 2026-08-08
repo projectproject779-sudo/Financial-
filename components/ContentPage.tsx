@@ -6,7 +6,7 @@ export function ContentPage({ eyebrow, title, lede, children }: { eyebrow: strin
   return (
     <>
       <SiteHeader />
-      <main className="content-page">
+      <main className="content-page" id="main-content">
         <article className="shell content-page-inner">
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
