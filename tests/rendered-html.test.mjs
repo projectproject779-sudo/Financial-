@@ -58,7 +58,15 @@ test("publishes local country context and in-depth guides", async () => {
   assert.equal(guide.status, 200);
   const guideHtml = await guide.text();
   assert.match(guideHtml, /like-for-like comparison/i);
-  assert.match(guideHtml, /Numora Editorial Team/);
+  assert.match(guideHtml, /Shuxrat Asliddinov/);
+});
+
+test("publishes a transparent accountable founder profile", async () => {
+  const response = await render("/authors/numora-editorial-team");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Shuxrat Asliddinov/);
+  assert.match(html, /not as a licensed financial adviser/i);
 });
 
 test("publishes trust content and security headers", async () => {

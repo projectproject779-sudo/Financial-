@@ -31,7 +31,7 @@ export function SiteFooter() {
         <div>
           <p className="footer-title">Trust & company</p>
           <Link href="/about">About Numora</Link>
-          <Link href="/authors/numora-editorial-team">Editorial team</Link>
+          <Link href="/authors/numora-editorial-team">Founder & publisher</Link>
           <Link href="/editorial-policy">Editorial policy</Link>
           <Link href="/methodology">Methodology</Link>
           <Link href="/sources">Sources</Link>
