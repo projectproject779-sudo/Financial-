@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { ContentPage } from "../../../components/ContentPage";
 
 export const metadata: Metadata = { title: "How Compound Interest Builds Wealth", description: "Understand compounding, time, contributions, and investment growth with simple examples.", alternates: { canonical: "/guides/compound-interest" } };
@@ -14,6 +14,6 @@ export default function Page() {
     <div className="guide-callout">Expected return is an assumption, not a promise. Real investments fluctuate, fees reduce returns, and taxes vary by country.</div>
     <h2>Use a range, not one forecast</h2>
     <p>Try conservative, moderate, and optimistic return assumptions. If your plan only works under the optimistic scenario, consider a higher contribution, a longer horizon, or a smaller target.</p>
-    <p><Link className="text-link" href="/compound-interest-calculator">Explore compound growth →</Link></p>
+    <p><Link className="text-link" href="/calculators/compound-interest">Explore compound growth →</Link></p>
   </ContentPage>;
 }

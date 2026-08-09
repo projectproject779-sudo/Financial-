@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { ContentPage } from "../../../components/ContentPage";
 
 export const metadata: Metadata = { title: "How to Build a Monthly Savings Plan", description: "Turn a large savings goal into a practical monthly target and realistic timeline.", alternates: { canonical: "/guides/savings-goals" } };
@@ -14,6 +14,6 @@ export default function Page() {
     <div className="guide-callout">Automating a manageable contribution is usually more durable than relying on occasional large transfers.</div>
     <h2>Review and adjust</h2>
     <p>Check progress monthly, but make strategic changes quarterly. Increase contributions after income rises and extend the deadline when the alternative would be high-cost debt.</p>
-    <p><Link className="text-link" href="/savings-goal-calculator">Build your monthly savings target →</Link></p>
+    <p><Link className="text-link" href="/calculators/savings-goal">Build your monthly savings target →</Link></p>
   </ContentPage>;
 }

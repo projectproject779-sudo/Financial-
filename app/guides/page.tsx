@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { SiteFooter } from "../../components/SiteFooter";
 import { SiteHeader } from "../../components/SiteHeader";
 import { guides } from "../../lib/guides";
 
-export const metadata: Metadata = { title: "Plain-English Money Guides", description: "Evidence-led guides to loans, mortgages, saving, debt, retirement, inflation, investing, and financial planning." };
+export const metadata: Metadata = { title: "Plain-English Money Guides", description: "Evidence-led guides to loans, mortgages, saving, debt, retirement, inflation, investing, and financial planning.", alternates: { canonical: "/guides" } };
 
 const originals = [{ href: "/guides/apr-vs-interest-rate", category: "Borrowing", title: "APR vs interest rate", copy: "See the difference that changes the real cost of debt." }, { href: "/guides/compound-interest", category: "Investing", title: "How compound interest builds wealth", copy: "Understand the roles of time, return, and consistency." }, { href: "/guides/savings-goals", category: "Saving", title: "Turn a big goal into a monthly plan", copy: "Build a practical path from target to monthly action." }];
 

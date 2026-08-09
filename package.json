@@ -8,13 +8,20 @@
   "scripts": {
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
     "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "vercel-build": "next build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "cf:types": "wrangler types worker-configuration.d.ts --include-runtime false",
+    "cf:build": "NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-3458177637677415 NEXT_PUBLIC_ADSENSE_SLOT=9387561979 npm run build",
+    "cf:verify-ads": "NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-3458177637677415 NEXT_PUBLIC_ADSENSE_SLOT=9387561979 node scripts/verify-adsense-build.mjs",
+    "cf:dry-run": "npm run cf:build && npm run cf:verify-ads && wrangler deploy --config dist/server/wrangler.json --dry-run",
+    "cf:deploy": "npm run cf:build && npm run cf:verify-ads && wrangler deploy --config dist/server/wrangler.json",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
+    "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },

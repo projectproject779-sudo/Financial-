@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { ContentPage } from "../../../components/ContentPage";
 
 export const metadata: Metadata = { title: "APR vs Interest Rate: What Is the Difference?", description: "A plain-English guide to interest rates, APR, fees, and the real cost of borrowing.", alternates: { canonical: "/guides/apr-vs-interest-rate" } };
@@ -14,6 +14,6 @@ export default function Page() {
     <div className="guide-callout">When comparing similar loans, look at the APR, total repayment, monthly payment, and early-repayment rules together.</div>
     <h2>A simple comparison method</h2>
     <ol><li>Use the same loan amount and term for every offer.</li><li>Record the advertised rate, APR, all fees, and total repayment.</li><li>Check whether the rate is fixed or variable.</li><li>Ask what happens if you repay early or miss a payment.</li></ol>
-    <p><Link className="text-link" href="/loan-calculator">Test an offer with the loan calculator →</Link></p>
+    <p><Link className="text-link" href="/calculators/loan-payment">Test an offer with the loan calculator →</Link></p>
   </ContentPage>;
 }

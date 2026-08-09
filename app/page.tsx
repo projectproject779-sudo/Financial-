@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { Calculator } from "../components/Calculator";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
+import { guides } from "../lib/guides";
+import { absoluteUrl } from "../lib/site";
 
 export const metadata: Metadata = {
-  title: "Numora — Free Financial Calculators for Smarter Money Decisions",
+  title: "Free Financial Calculators for Smarter Money Decisions",
   description: "Calculate loans, mortgages, compound interest, savings goals, and investment returns in seconds. Free, private, and built for a global audience.",
+  alternates: { canonical: "/" },
 };
 
 const toolCards = [
-  { href: "/loan-calculator", short: "LN", title: "Loan calculator", copy: "Estimate monthly payments, interest, and total cost.", tone: "blue" },
-  { href: "/mortgage-calculator", short: "MT", title: "Mortgage calculator", copy: "Plan a home purchase and compare repayment terms.", tone: "green" },
-  { href: "/compound-interest-calculator", short: "CI", title: "Compound interest", copy: "See what steady contributions can become over time.", tone: "orange" },
-  { href: "/savings-goal-calculator", short: "SG", title: "Savings goal", copy: "Turn a future target into a monthly action plan.", tone: "purple" },
-  { href: "/investment-return-calculator", short: "IR", title: "Investment return", copy: "Project a portfolio across different time and return scenarios.", tone: "lime" },
+  { href: "/calculators/loan-payment", short: "LN", title: "Loan calculator", copy: "Estimate monthly payments, interest, and total cost.", tone: "blue" },
+  { href: "/calculators/mortgage-payment", short: "MT", title: "Mortgage calculator", copy: "Plan a home purchase and compare repayment terms.", tone: "green" },
+  { href: "/calculators/compound-interest", short: "CI", title: "Compound interest", copy: "See what steady contributions can become over time.", tone: "orange" },
+  { href: "/calculators/savings-goal", short: "SG", title: "Savings goal", copy: "Turn a future target into a monthly action plan.", tone: "purple" },
+  { href: "/calculators/investment-return", short: "IR", title: "Investment return", copy: "Project a portfolio across different time and return scenarios.", tone: "lime" },
 ];
 
 const faqs = [
@@ -28,21 +31,39 @@ const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "WebSite",
+      "@type": "Organization",
+      "@id": absoluteUrl("/#organization"),
       name: "Numora",
+      url: absoluteUrl("/"),
+      logo: { "@type": "ImageObject", url: absoluteUrl("/favicon.png") },
+    },
+    {
+      "@type": "WebSite",
+      "@id": absoluteUrl("/#website"),
+      name: "Numora",
+      url: absoluteUrl("/"),
       description: "Free global financial calculators and plain-English money guides.",
+      inLanguage: "en",
+      publisher: { "@id": absoluteUrl("/#organization") },
     },
     {
       "@type": "WebApplication",
+      "@id": absoluteUrl("/#financial-calculators"),
       name: "Numora Financial Calculators",
+      url: absoluteUrl("/"),
       applicationCategory: "FinanceApplication",
       operatingSystem: "Any",
       browserRequirements: "Requires JavaScript",
+      isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       description: "Free calculators for loans, mortgages, compound interest, savings goals, and investment returns.",
+      provider: { "@id": absoluteUrl("/#organization") },
     },
     {
       "@type": "FAQPage",
+      "@id": absoluteUrl("/#faq"),
+      url: absoluteUrl("/#faq"),
+      isPartOf: { "@id": absoluteUrl("/#website") },
       mainEntity: faqs.map(([question, answer]) => ({
         "@type": "Question",
         name: question,
@@ -170,7 +191,7 @@ export default function Home() {
           <div className="shell">
             <div className="section-heading-row">
               <div><p className="eyebrow">Money, explained</p><h2>Practical guides for smarter planning</h2></div>
-              <Link className="text-link" href="/guides">View all 11 guides</Link>
+              <Link className="text-link" href="/guides">View all {guides.length + 3} guides</Link>
             </div>
             <div className="guide-grid">
               <article className="guide-card featured">

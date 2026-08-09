@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { CalculatorConfig, ResultFormat } from "../lib/calculators";
 import { calculate } from "../lib/calculators";
 
@@ -17,19 +17,30 @@ function format(value: number, type: ResultFormat, currency: string) {
 
 const suffix: Record<string, string> = { percent: "%", years: "years", months: "months", hours: "hours", number: "" };
 
+function trackCalculatorEvent(eventName: string, calculatorSlug: string, extra: Record<string, string> = {}) {
+  const win = window as Window & { gtag?: (command: "event", name: string, params: Record<string, string>) => void };
+  win.gtag?.("event", eventName, { calculator_slug: calculatorSlug, ...extra });
+}
+
 export function UniversalCalculator({ config, defaultCurrency = "USD" }: { config: CalculatorConfig; defaultCurrency?: string }) {
   const [currency, setCurrency] = useState(currencies.includes(defaultCurrency as (typeof currencies)[number]) ? defaultCurrency : "USD");
   const [values, setValues] = useState<Record<string, number>>(() => Object.fromEntries(config.fields.map((field) => [field.key, field.defaultValue])));
   const [copied, setCopied] = useState(false);
+  const hasTrackedUse = useRef(false);
   const result = useMemo(() => calculate(config.slug, values), [config.slug, values]);
 
   const setField = (key: string, next: number, min: number, max: number) => {
+    if (!hasTrackedUse.current) {
+      hasTrackedUse.current = true;
+      trackCalculatorEvent("calculator_use", config.slug, { calculator_category: config.category });
+    }
     setValues((current) => ({ ...current, [key]: Math.min(max, Math.max(min, Number.isFinite(next) ? next : 0)) }));
   };
 
   const copySummary = async () => {
     const rows = result.rows.map((row) => `${row.label}: ${format(row.value, row.format, currency)}`).join("\n");
     await navigator.clipboard?.writeText(`${config.title}\n${result.headline}: ${format(result.headlineValue, result.headlineFormat, currency)}\n${rows}\n\nEducational estimate from Numora.`);
+    trackCalculatorEvent("calculator_copy_summary", config.slug);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   };
@@ -39,7 +50,7 @@ export function UniversalCalculator({ config, defaultCurrency = "USD" }: { confi
       <div className="universal-inputs">
         <div className="calc-heading-row">
           <div><p className="eyebrow">Live scenario</p><h2>Enter your numbers</h2></div>
-          <label className="currency-select"><span className="sr-only">Currency</span><select value={currency} onChange={(event) => setCurrency(event.target.value)}>{currencies.map((code) => <option key={code}>{code}</option>)}</select></label>
+          <label className="currency-select"><span className="sr-only">Currency</span><select value={currency} onChange={(event) => { setCurrency(event.target.value); trackCalculatorEvent("calculator_currency_change", config.slug, { currency: event.target.value }); }}>{currencies.map((code) => <option key={code}>{code}</option>)}</select></label>
         </div>
         <div className="universal-fields">
           {config.fields.map((field) => (
@@ -65,7 +76,7 @@ export function UniversalCalculator({ config, defaultCurrency = "USD" }: { confi
           {result.rows.map((row) => <div key={row.label}><dt>{row.label}</dt><dd>{format(row.value, row.format, currency)}</dd></div>)}
         </dl>
         <p className="result-insight">{result.insight}</p>
-        <div className="result-actions"><button type="button" onClick={copySummary}>{copied ? "Copied" : "Copy summary"}</button><button type="button" onClick={() => window.print()}>Print result</button></div>
+        <div className="result-actions"><button type="button" onClick={copySummary}>{copied ? "Copied" : "Copy summary"}</button><button type="button" onClick={() => { trackCalculatorEvent("calculator_print", config.slug); window.print(); }}>Print result</button></div>
         <p className="result-disclaimer">Educational estimate only. It excludes provider-specific fees, taxes, rules, and market uncertainty unless explicitly stated.</p>
       </div>
     </section>

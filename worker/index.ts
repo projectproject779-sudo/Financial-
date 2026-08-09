@@ -1,45 +1,44 @@
 /** Cloudflare Worker entry point for Numora. */
-import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
-
-interface Env {
-  ASSETS: Fetcher;
-  DB: D1Database;
-  IMAGES: {
-    input(stream: ReadableStream): {
-      transform(options: Record<string, unknown>): {
-        output(options: { format: string; quality: number }): Promise<{ response(): Response }>;
-      };
-    };
-  };
-}
 
 interface ExecutionContext {
   waitUntil(promise: Promise<unknown>): void;
-  passThroughOnException(): void;
 }
 
-// Image security config. SVG sources with .svg extension auto-skip the
-// optimization endpoint on the client side (served directly, no proxy).
-// To route SVGs through the optimizer (with security headers), set
-// dangerouslyAllowSVG: true in next.config.js and uncomment below:
-// const imageConfig: ImageConfig = { dangerouslyAllowSVG: true };
+const RESTRICTED_AD_REGIONS = new Set([
+  "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HR", "HU",
+  "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK",
+]);
+
+const PRIMARY_ORIGIN = "https://www.nexusvault.lat";
+const ALTERNATE_HOSTS = new Set([
+  "nexusvault.lat",
+  "numora-money-tools.projectproject779.workers.dev",
+]);
+
+function getCanonicalRedirect(request: Request): Response | undefined {
+  const url = new URL(request.url);
+  const isApexAdsFile = url.hostname === "nexusvault.lat" && url.pathname === "/ads.txt";
+  const needsCanonicalHost = ALTERNATE_HOSTS.has(url.hostname) && !isApexAdsFile;
+  const needsHttps = url.hostname === "www.nexusvault.lat" && url.protocol !== "https:";
+
+  if (!needsCanonicalHost && !needsHttps) return undefined;
+
+  const canonicalUrl = new URL(`${url.pathname}${url.search}`, PRIMARY_ORIGIN);
+  return Response.redirect(canonicalUrl.toString(), 308);
+}
+
+function getRequestCountry(request: Request): string | undefined {
+  const cloudflareProperties: unknown = Reflect.get(request, "cf");
+  if (typeof cloudflareProperties !== "object" || cloudflareProperties === null || !("country" in cloudflareProperties)) return undefined;
+  const country = cloudflareProperties.country;
+  return typeof country === "string" ? country.toUpperCase() : undefined;
+}
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-
-    if (url.pathname === "/_vinext/image") {
-      const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
-      const imageResponse = await handleImageOptimization(request, {
-        fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),
-        transformImage: async (body, { width, format, quality }) => {
-          const result = await env.IMAGES.input(body).transform(width > 0 ? { width } : {}).output({ format, quality });
-          return result.response();
-        },
-      }, allowedWidths);
-      return withSecurityHeaders(imageResponse, request);
-    }
+    const redirect = getCanonicalRedirect(request);
+    if (redirect) return withSecurityHeaders(redirect, request);
 
     const response = await handler.fetch(request, env, ctx);
     return withSecurityHeaders(response, request);
@@ -54,6 +53,12 @@ function withSecurityHeaders(response: Response, request: Request): Response {
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
   if (new URL(request.url).protocol === "https:") {
     headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  if ((headers.get("Content-Type") ?? "").toLowerCase().startsWith("text/html")) {
+    const country = getRequestCountry(request);
+    const adRegion = country && !RESTRICTED_AD_REGIONS.has(country) ? "standard" : "restricted";
+    headers.append("Set-Cookie", `numora-ad-region=${adRegion}; Max-Age=2592000; Path=/; SameSite=Lax; Secure`);
+    headers.append("Vary", "CF-IPCountry");
   }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }

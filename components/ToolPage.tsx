@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SafeLink";
 import { Calculator, type ToolId } from "./Calculator";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
