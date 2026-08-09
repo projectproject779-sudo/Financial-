@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ResultBreakdownChart } from "./ResultBreakdownChart";
 
 export type ToolId = "loan" | "mortgage" | "interest" | "savings" | "investment";
 
@@ -120,6 +121,13 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
           ["Total interest", Math.max(0, total - amount)],
           ["Total repayment", total],
         ],
+        chart: {
+          label: "Lifetime repayment breakdown",
+          segments: [
+            { label: "Principal", value: amount },
+            { label: "Interest", value: Math.max(0, total - amount) },
+          ],
+        },
         percent: total ? (amount / total) * 100 : 100,
       };
     }
@@ -141,6 +149,13 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
           ["Estimated growth", Math.max(0, total - contributed)],
           ["Total balance", total],
         ],
+        chart: {
+          label: "Projected balance breakdown",
+          segments: [
+            { label: "Contributions", value: contributed },
+            { label: "Growth", value: Math.max(0, total - contributed) },
+          ],
+        },
         percent: total ? (contributed / total) * 100 : 100,
       };
     }
@@ -160,6 +175,14 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
         ["Your contributions", contributed - deposit],
         ["Target balance", goal],
       ],
+      chart: {
+        label: "Savings goal breakdown",
+        segments: [
+          { label: "Starting savings", value: deposit },
+          { label: "Planned contributions", value: Math.max(0, contributed - deposit) },
+          { label: "Estimated growth", value: Math.max(0, goal - contributed) },
+        ],
+      },
       percent: goal ? Math.min(100, (contributed / goal) * 100) : 100,
     };
   }, [tool, amount, rate, years, deposit, monthly, goal]);
@@ -266,13 +289,7 @@ export function Calculator({ defaultTool = "loan" }: { defaultTool?: ToolId }) {
           <p className="result-kicker">Your estimate</p>
           <p className="result-label">{result.heroLabel}</p>
           <p className="result-number">{money(result.hero, 0)}</p>
-          <div className="result-bar" aria-hidden="true">
-            <span style={{ width: `${Math.max(8, Math.min(92, result.percent))}%` }} />
-          </div>
-          <div className="result-legend">
-            <span><i className="dot dot-dark" />Principal / contributions</span>
-            <span><i className="dot dot-light" />Interest / growth</span>
-          </div>
+          <ResultBreakdownChart formatValue={(value) => money(value)} label={result.chart.label} segments={result.chart.segments} />
           <dl className="result-list">
             {result.rows.map(([label, value]) => (
               <div key={label as string}>

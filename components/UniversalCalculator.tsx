@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { CalculatorConfig, ResultFormat } from "../lib/calculators";
 import { calculate } from "../lib/calculators";
+import { ResultBreakdownChart } from "./ResultBreakdownChart";
 
 const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "JPY", "AED", "SGD", "NZD", "CHF", "ZAR", "MYR"] as const;
 
@@ -71,7 +72,15 @@ export function UniversalCalculator({ config, defaultCurrency = "USD" }: { confi
         {result.warning && <p className="result-warning">{result.warning}</p>}
         <p className="result-label">{result.headline}</p>
         <p className="result-number">{format(result.headlineValue, result.headlineFormat, currency)}</p>
-        <div className="result-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(2, result.progress ?? 55))}%` }} /></div>
+        {result.chart ? (
+          <ResultBreakdownChart
+            formatValue={(value) => format(value, result.chart?.format ?? "currency", currency)}
+            label={result.chart.label}
+            segments={result.chart.segments}
+          />
+        ) : (
+          <div className="result-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(2, result.progress ?? 55))}%` }} /></div>
+        )}
         <dl className="result-list">
           {result.rows.map((row) => <div key={row.label}><dt>{row.label}</dt><dd>{format(row.value, row.format, currency)}</dd></div>)}
         </dl>

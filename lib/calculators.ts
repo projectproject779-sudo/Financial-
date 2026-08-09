@@ -41,6 +41,11 @@ export type CalculatorResult = {
   headlineValue: number;
   headlineFormat: ResultFormat;
   rows: Array<{ label: string; value: number; format: ResultFormat }>;
+  chart?: {
+    label: string;
+    format?: ResultFormat;
+    segments: Array<{ label: string; value: number }>;
+  };
   insight: string;
   progress?: number;
   warning?: string;
@@ -397,38 +402,43 @@ export function getCalculator(slug: string) {
 export function calculate(slug: string, v: Record<string, number>): CalculatorResult {
   const currencyRow = (label: string, value: number) => ({ label, value, format: "currency" as const });
   const percentRow = (label: string, value: number) => ({ label, value, format: "percent" as const });
+  const chart = (label: string, segments: Array<[string, number]>, format: ResultFormat = "currency") => ({
+    label,
+    format,
+    segments: segments.map(([segmentLabel, value]) => ({ label: segmentLabel, value: Math.max(0, value) })),
+  });
 
   if (["loan-payment", "student-loan"].includes(slug)) {
     const monthly = monthlyPayment(v.principal, v.rate, v.years);
     const total = monthly * v.years * 12;
-    return { headline: "Estimated monthly payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Principal", v.principal), currencyRow("Total interest", total - v.principal), currencyRow("Total repayment", total)], insight: "A shorter term usually raises the payment but reduces lifetime interest.", progress: total ? v.principal / total * 100 : 100 };
+    return { headline: "Estimated monthly payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Principal", v.principal), currencyRow("Total interest", total - v.principal), currencyRow("Total repayment", total)], chart: chart("Lifetime repayment breakdown", [["Principal", v.principal], ["Interest", total - v.principal]]), insight: "A shorter term usually raises the payment but reduces lifetime interest.", progress: total ? v.principal / total * 100 : 100 };
   }
   if (slug === "mortgage-payment") {
     const principal = Math.max(0, v.homePrice - v.downPayment);
     const monthly = monthlyPayment(principal, v.rate, v.years);
     const total = monthly * v.years * 12;
-    return { headline: "Principal & interest payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Mortgage principal", principal), currencyRow("Deposit", v.downPayment), currencyRow("Lifetime interest", total - principal)], insight: "Add local property tax, insurance, and property fees to estimate the full housing payment.", progress: v.homePrice ? v.downPayment / v.homePrice * 100 : 0 };
+    return { headline: "Principal & interest payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Mortgage principal", principal), currencyRow("Deposit", v.downPayment), currencyRow("Lifetime interest", total - principal)], chart: chart("Home financing breakdown", [["Deposit", v.downPayment], ["Mortgage principal", principal], ["Lifetime interest", total - principal]]), insight: "Add local property tax, insurance, and property fees to estimate the full housing payment.", progress: v.homePrice ? v.downPayment / v.homePrice * 100 : 0 };
   }
   if (slug === "auto-loan") {
     const principal = Math.max(0, v.price - v.downPayment - v.tradeIn);
     const monthly = monthlyPayment(principal, v.rate, v.years);
     const total = monthly * v.years * 12;
-    return { headline: "Estimated car payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Amount financed", principal), currencyRow("Total interest", total - principal), currencyRow("Total loan payments", total)], insight: "Compare this with the full ownership budget, including insurance, registration, maintenance, and energy.", progress: v.price ? (v.downPayment + v.tradeIn) / v.price * 100 : 0 };
+    return { headline: "Estimated car payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Amount financed", principal), currencyRow("Total interest", total - principal), currencyRow("Total loan payments", total)], chart: chart("Vehicle cost breakdown", [["Deposit and trade-in", v.downPayment + v.tradeIn], ["Amount financed", principal], ["Loan interest", total - principal]]), insight: "Compare this with the full ownership budget, including insurance, registration, maintenance, and energy.", progress: v.price ? (v.downPayment + v.tradeIn) / v.price * 100 : 0 };
   }
   if (slug === "business-loan") {
     const monthly = monthlyPayment(v.principal, v.rate, v.years);
     const total = monthly * v.years * 12;
     const fee = v.principal * v.feeRate / 100;
-    return { headline: "Estimated monthly payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Origination fee", fee), currencyRow("Interest cost", total - v.principal), currencyRow("Total financing cost", total + fee - v.principal)], insight: "Test the payment against conservative cash flow, not only an average month.", progress: total ? v.principal / total * 100 : 100 };
+    return { headline: "Estimated monthly payment", headlineValue: monthly, headlineFormat: "currency", rows: [currencyRow("Origination fee", fee), currencyRow("Interest cost", total - v.principal), currencyRow("Total financing cost", total + fee - v.principal)], chart: chart("Business financing breakdown", [["Principal", v.principal], ["Interest", total - v.principal], ["Origination fee", fee]]), insight: "Test the payment against conservative cash flow, not only an average month.", progress: total ? v.principal / total * 100 : 100 };
   }
   if (["credit-card-payoff", "debt-payoff"].includes(slug)) {
     const p = payoff(v.balance, v.rate, v.payment);
     if (p.impossible) return { headline: "Payment is too low", headlineValue: 0, headlineFormat: "months", rows: [currencyRow("First-month interest", v.balance * v.rate / 100 / 12), currencyRow("Your payment", v.payment)], insight: "Increase the payment above monthly interest so the balance can begin to fall.", warning: "At this payment, the balance would not be repaid within the model." };
-    return { headline: "Estimated time to debt-free", headlineValue: p.months, headlineFormat: "months", rows: [currencyRow("Starting balance", v.balance), currencyRow("Estimated interest", p.interest), currencyRow("Estimated total paid", v.balance + p.interest)], insight: "Even a modest repeatable extra payment can materially shorten the payoff period.", progress: Math.min(100, 120 / Math.max(1, p.months) * 100) };
+    return { headline: "Estimated time to debt-free", headlineValue: p.months, headlineFormat: "months", rows: [currencyRow("Starting balance", v.balance), currencyRow("Estimated interest", p.interest), currencyRow("Estimated total paid", v.balance + p.interest)], chart: chart("Total payoff breakdown", [["Starting balance", v.balance], ["Interest", p.interest]]), insight: "Even a modest repeatable extra payment can materially shorten the payoff period.", progress: Math.min(100, 120 / Math.max(1, p.months) * 100) };
   }
   if (slug === "debt-to-income") {
     const ratio = v.grossIncome ? v.debtPayments / v.grossIncome * 100 : 0;
-    return { headline: "Debt-to-income ratio", headlineValue: ratio, headlineFormat: "percent", rows: [currencyRow("Monthly debt", v.debtPayments), currencyRow("Gross monthly income", v.grossIncome), currencyRow("Income after listed debt", Math.max(0, v.grossIncome - v.debtPayments))], insight: "Lenders use different definitions and thresholds, so confirm the specific underwriting method.", progress: ratio };
+    return { headline: "Debt-to-income ratio", headlineValue: ratio, headlineFormat: "percent", rows: [currencyRow("Monthly debt", v.debtPayments), currencyRow("Gross monthly income", v.grossIncome), currencyRow("Income after listed debt", Math.max(0, v.grossIncome - v.debtPayments))], chart: chart("Gross income allocation", [["Debt payments", v.debtPayments], ["Income after listed debt", v.grossIncome - v.debtPayments]]), insight: "Lenders use different definitions and thresholds, so confirm the specific underwriting method.", progress: ratio };
   }
   if (slug === "refinance-break-even") {
     const months = v.monthlySavings ? v.closingCosts / v.monthlySavings : 0;
@@ -436,13 +446,13 @@ export function calculate(slug: string, v: Record<string, number>): CalculatorRe
   }
   if (slug === "effective-interest-rate") {
     const effective = ((1 + v.nominalRate / 100 / Math.max(1, v.periods)) ** Math.max(1, v.periods) - 1) * 100;
-    return { headline: "Effective annual rate", headlineValue: effective, headlineFormat: "percent", rows: [percentRow("Nominal annual rate", v.nominalRate), { label: "Compounding periods", value: v.periods, format: "number" }, percentRow("Compounding uplift", effective - v.nominalRate)], insight: "Compare effective rates on the same basis, then review fees and legal APR disclosures separately.", progress: Math.min(100, effective) };
+    return { headline: "Effective annual rate", headlineValue: effective, headlineFormat: "percent", rows: [percentRow("Nominal annual rate", v.nominalRate), { label: "Compounding periods", value: v.periods, format: "number" }, percentRow("Compounding uplift", effective - v.nominalRate)], chart: chart("Effective rate composition", [["Nominal rate", v.nominalRate], ["Compounding uplift", effective - v.nominalRate]], "percent"), insight: "Compare effective rates on the same basis, then review fees and legal APR disclosures separately.", progress: Math.min(100, effective) };
   }
   if (["compound-interest", "retirement-savings"].includes(slug)) {
     const starting = slug === "compound-interest" ? v.starting : v.current;
     const total = compoundValue(starting, v.monthly, v.rate, v.years);
     const contributed = starting + v.monthly * v.years * 12;
-    return { headline: slug === "retirement-savings" ? "Projected retirement balance" : "Projected future balance", headlineValue: total, headlineFormat: "currency", rows: [currencyRow("Your contributions", contributed), currencyRow("Estimated growth", Math.max(0, total - contributed)), currencyRow("Projected total", total)], insight: "The return is a scenario, not a promise. Compare a lower-return case before relying on the result.", progress: total ? contributed / total * 100 : 100 };
+    return { headline: slug === "retirement-savings" ? "Projected retirement balance" : "Projected future balance", headlineValue: total, headlineFormat: "currency", rows: [currencyRow("Your contributions", contributed), currencyRow("Estimated growth", Math.max(0, total - contributed)), currencyRow("Projected total", total)], chart: chart("Projected balance breakdown", [["Your contributions", contributed], ["Estimated growth", total - contributed]]), insight: "The return is a scenario, not a promise. Compare a lower-return case before relying on the result.", progress: total ? contributed / total * 100 : 100 };
   }
   if (slug === "savings-goal") {
     const months = v.years * 12;
@@ -450,15 +460,17 @@ export function calculate(slug: string, v: Record<string, number>): CalculatorRe
     const grownCurrent = v.current * (1 + rate) ** months;
     const factor = rate ? ((1 + rate) ** months - 1) / rate : months;
     const required = Math.max(0, (v.goal - grownCurrent) / Math.max(1, factor));
-    return { headline: "Required monthly contribution", headlineValue: required, headlineFormat: "currency", rows: [currencyRow("Current savings", v.current), currencyRow("Target", v.goal), currencyRow("Total future contributions", required * months)], insight: required ? "Automate a repeatable amount and review the target at least annually." : "Your current balance is projected to meet or exceed the selected goal.", progress: v.goal ? Math.min(100, grownCurrent / v.goal * 100) : 100 };
+    const futureContributions = required * months;
+    const projectedGrowth = Math.max(0, v.goal - v.current - futureContributions);
+    return { headline: "Required monthly contribution", headlineValue: required, headlineFormat: "currency", rows: [currencyRow("Current savings", v.current), currencyRow("Target", v.goal), currencyRow("Total future contributions", futureContributions)], chart: chart("Savings goal breakdown", [["Current savings", v.current], ["Future contributions", futureContributions], ["Estimated growth", projectedGrowth]]), insight: required ? "Automate a repeatable amount and review the target at least annually." : "Your current balance is projected to meet or exceed the selected goal.", progress: v.goal ? Math.min(100, grownCurrent / v.goal * 100) : 100 };
   }
   if (slug === "emergency-fund") {
     const target = v.expenses * v.months;
     const gap = Math.max(0, target - v.current);
-    return { headline: "Emergency fund target", headlineValue: target, headlineFormat: "currency", rows: [currencyRow("Current reserve", v.current), currencyRow("Funding gap", gap), { label: "Coverage today", value: v.expenses ? v.current / v.expenses : 0, format: "months" }], insight: gap ? "Build the gap in stages while keeping emergency money safe and accessible." : "Your current reserve meets or exceeds this selected coverage target.", progress: target ? v.current / target * 100 : 100 };
+    return { headline: "Emergency fund target", headlineValue: target, headlineFormat: "currency", rows: [currencyRow("Current reserve", v.current), currencyRow("Funding gap", gap), { label: "Coverage today", value: v.expenses ? v.current / v.expenses : 0, format: "months" }], chart: chart("Emergency target progress", [["Current reserve", Math.min(v.current, target)], ["Funding gap", gap]]), insight: gap ? "Build the gap in stages while keeping emergency money safe and accessible." : "Your current reserve meets or exceeds this selected coverage target.", progress: target ? v.current / target * 100 : 100 };
   }
   if (slug === "budget-50-30-20") {
-    return { headline: "Suggested future-goals allocation", headlineValue: v.income * .2, headlineFormat: "currency", rows: [currencyRow("Needs — 50%", v.income * .5), currencyRow("Wants — 30%", v.income * .3), currencyRow("Saving / extra debt — 20%", v.income * .2)], insight: "Treat these as reference points and build the final budget from your real obligations.", progress: 20 };
+    return { headline: "Suggested future-goals allocation", headlineValue: v.income * .2, headlineFormat: "currency", rows: [currencyRow("Needs — 50%", v.income * .5), currencyRow("Wants — 30%", v.income * .3), currencyRow("Saving / extra debt — 20%", v.income * .2)], chart: chart("Reference budget allocation", [["Needs", v.income * .5], ["Wants", v.income * .3], ["Saving / extra debt", v.income * .2]]), insight: "Treat these as reference points and build the final budget from your real obligations.", progress: 20 };
   }
   if (slug === "net-worth") {
     const net = v.assets - v.liabilities;
@@ -466,22 +478,22 @@ export function calculate(slug: string, v: Record<string, number>): CalculatorRe
   }
   if (slug === "inflation") {
     const factor = (1 + v.rate / 100) ** v.years;
-    return { headline: "Estimated future cost", headlineValue: v.amount * factor, headlineFormat: "currency", rows: [currencyRow("Amount today", v.amount), currencyRow("Price increase", v.amount * factor - v.amount), currencyRow("Future purchasing power of today's amount", v.amount / factor)], insight: "This is a constant-rate scenario; your personal cost basket can change differently.", progress: Math.min(100, (factor - 1) * 100) };
+    return { headline: "Estimated future cost", headlineValue: v.amount * factor, headlineFormat: "currency", rows: [currencyRow("Amount today", v.amount), currencyRow("Price increase", v.amount * factor - v.amount), currencyRow("Future purchasing power of today's amount", v.amount / factor)], chart: chart("Future cost breakdown", [["Cost today", v.amount], ["Inflation increase", v.amount * factor - v.amount]]), insight: "This is a constant-rate scenario; your personal cost basket can change differently.", progress: Math.min(100, (factor - 1) * 100) };
   }
   if (slug === "rent-affordability") {
     const ceiling = Math.max(0, v.grossIncome * v.ratio / 100 - v.monthlyDebt);
-    return { headline: "Planning rent ceiling", headlineValue: ceiling, headlineFormat: "currency", rows: [currencyRow("Gross monthly income", v.grossIncome), currencyRow("Debt adjustment", v.monthlyDebt), percentRow("Selected housing ratio", v.ratio)], insight: "Verify this ceiling in an after-tax budget that includes utilities, deposits, and irregular costs.", progress: v.ratio };
+    return { headline: "Planning rent ceiling", headlineValue: ceiling, headlineFormat: "currency", rows: [currencyRow("Gross monthly income", v.grossIncome), currencyRow("Debt adjustment", v.monthlyDebt), percentRow("Selected housing ratio", v.ratio)], chart: chart("Gross income planning view", [["Rent ceiling", ceiling], ["Listed debt", v.monthlyDebt], ["Income outside selected ratio", v.grossIncome - ceiling - v.monthlyDebt]]), insight: "Verify this ceiling in an after-tax budget that includes utilities, deposits, and irregular costs.", progress: v.ratio };
   }
   if (slug === "freelance-rate") {
     const retainedShare = Math.max(.01, 1 - v.taxRate / 100);
     const revenue = (v.income + v.costs) / retainedShare;
     const hourly = revenue / Math.max(1, v.hours);
-    return { headline: "Target hourly rate", headlineValue: hourly, headlineFormat: "currency", rows: [currencyRow("Required annual revenue", revenue), currencyRow("Business costs", v.costs), currencyRow("Target take-home", v.income)], insight: "Use this as a sustainable floor, then adjust for scope, value, urgency, and market demand.", progress: v.taxRate };
+    return { headline: "Target hourly rate", headlineValue: hourly, headlineFormat: "currency", rows: [currencyRow("Required annual revenue", revenue), currencyRow("Business costs", v.costs), currencyRow("Target take-home", v.income)], chart: chart("Required revenue allocation", [["Target take-home", v.income], ["Business costs", v.costs], ["Tax reserve", revenue - v.income - v.costs]]), insight: "Use this as a sustainable floor, then adjust for scope, value, urgency, and market demand.", progress: v.taxRate };
   }
   if (slug === "investment-return") {
     const profit = v.ending - v.initial;
     const roi = v.initial ? profit / v.initial * 100 : 0;
-    return { headline: "Simple return on investment", headlineValue: roi, headlineFormat: "percent", rows: [currencyRow("Profit / loss", profit), currencyRow("Initial investment", v.initial), currencyRow("Ending value", v.ending)], insight: "Simple ROI does not account for time. Use CAGR for multi-year annualized comparison.", progress: Math.max(0, roi) };
+    return { headline: "Simple return on investment", headlineValue: roi, headlineFormat: "percent", rows: [currencyRow("Profit / loss", profit), currencyRow("Initial investment", v.initial), currencyRow("Ending value", v.ending)], chart: profit >= 0 ? chart("Ending value breakdown", [["Initial investment", v.initial], ["Profit", profit]]) : chart("Investment loss breakdown", [["Ending value", v.ending], ["Loss", Math.abs(profit)]]), insight: "Simple ROI does not account for time. Use CAGR for multi-year annualized comparison.", progress: Math.max(0, roi) };
   }
   if (slug === "cagr") {
     const cagr = v.starting > 0 && v.ending >= 0 ? ((v.ending / v.starting) ** (1 / Math.max(1, v.years)) - 1) * 100 : 0;

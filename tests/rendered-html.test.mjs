@@ -99,6 +99,8 @@ test("server-renders the scalable calculator library and live model", async () =
   assert.match(calculatorHtml, /Credit card payoff calculator/);
   assert.match(calculatorHtml, /Official sources/);
   assert.match(calculatorHtml, /Formula and assumptions disclosed/);
+  assert.match(calculatorHtml, /Total payoff breakdown/);
+  assert.match(calculatorHtml, /"@type":"BreadcrumbList"/);
 });
 
 test("publishes local country context and in-depth guides", async () => {
@@ -127,7 +129,15 @@ test("publishes local country context and in-depth guides", async () => {
 
   const guideDirectory = await render("/guides");
   assert.equal(guideDirectory.status, 200);
-  assert.match(await guideDirectory.text(), />23<\/strong>/);
+  assert.match(await guideDirectory.text(), />25<\/strong>/);
+
+  const salaryGuide = await render("/insights/how-much-house-70000-salary");
+  assert.equal(salaryGuide.status, 200);
+  assert.match(await salaryGuide.text(), /\$70,000 annual gross salary/);
+
+  const payoffGuide = await render("/insights/pay-off-10000-credit-card");
+  assert.equal(payoffGuide.status, 200);
+  assert.match(await payoffGuide.text(), /about 52 months/);
 });
 
 test("publishes a transparent accountable founder profile", async () => {
@@ -181,7 +191,9 @@ test("serves crawler discovery files", async () => {
   assert.match(sitemap, /\/insights\/inflation-and-real-returns/);
   assert.match(sitemap, /\/insights\/car-affordability-total-cost/);
   assert.match(sitemap, /\/insights\/fire-number-assumptions/);
-  assert.equal((sitemap.match(/<url>/g) ?? []).length, 65);
+  assert.match(sitemap, /\/insights\/how-much-house-70000-salary/);
+  assert.match(sitemap, /\/insights\/pay-off-10000-credit-card/);
+  assert.equal((sitemap.match(/<url>/g) ?? []).length, 67);
 
   const adsResponse = await render("/ads.txt");
   assert.equal(adsResponse.status, 200);
