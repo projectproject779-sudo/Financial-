@@ -42,3 +42,5 @@ The production Worker sets a regional advertising eligibility cookie. AdSense re
 Google AdSense is integrated through a labelled responsive placement on calculator and guide pages. The verification meta tag and `ads.txt` route use the configured publisher ID. Ad scripts load only after optional consent and only in permitted regions. The site still has to be added to AdSense and approved by Google before ads can serve.
 
 Revenue depends on search rankings, content quality, audience trust, geography, and partner agreements; it is never guaranteed by the code alone.
+
+Optional paid partner links are configured by topic through the `NEXT_PUBLIC_PARTNER_*_URL` values. Only valid HTTPS destinations render, every link is visibly disclosed, and external commercial links carry the `sponsored` relationship. A public business inbox can be enabled with `NEXT_PUBLIC_BUSINESS_EMAIL`; leave it blank until a dedicated address is ready to publish.

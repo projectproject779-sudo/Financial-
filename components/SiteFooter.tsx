@@ -36,6 +36,7 @@ export function SiteFooter() {
           <Link href="/methodology">Methodology</Link>
           <Link href="/sources">Sources</Link>
           <Link href="/partners">Partner disclosure</Link>
+          <Link href="/advertise">Advertise with Numora</Link>
           <Link href="/corrections">Corrections</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>

@@ -148,6 +148,25 @@ test("publishes a transparent accountable founder profile", async () => {
   assert.match(html, /not as a licensed financial adviser/i);
 });
 
+test("keeps commercial links transparent and disabled until configured", async () => {
+  const calculator = await render("/calculators/loan-payment");
+  assert.equal(calculator.status, 200);
+  assert.doesNotMatch(await calculator.text(), /Optional paid partner link/);
+
+  const partners = await render("/partners");
+  assert.equal(partners.status, 200);
+  assert.match(await partners.text(), /no active bank, credit, mortgage/i);
+
+  const advertise = await render("/advertise");
+  assert.equal(advertise.status, 200);
+  const advertiseHtml = await advertise.text();
+  assert.match(advertiseHtml, /Reach people while they are planning/i);
+  assert.match(advertiseHtml, /Partner intake is currently closed/i);
+
+  const offerSource = await readFile(new URL("../components/PartnerOffer.tsx", import.meta.url), "utf8");
+  assert.match(offerSource, /rel="sponsored noopener noreferrer"/);
+});
+
 test("publishes trust content and security headers", async () => {
   const response = await render("/methodology");
   assert.equal(response.status, 200);
@@ -193,7 +212,8 @@ test("serves crawler discovery files", async () => {
   assert.match(sitemap, /\/insights\/fire-number-assumptions/);
   assert.match(sitemap, /\/insights\/how-much-house-70000-salary/);
   assert.match(sitemap, /\/insights\/pay-off-10000-credit-card/);
-  assert.equal((sitemap.match(/<url>/g) ?? []).length, 67);
+  assert.match(sitemap, /\/advertise/);
+  assert.equal((sitemap.match(/<url>/g) ?? []).length, 68);
 
   const adsResponse = await render("/ads.txt");
   assert.equal(adsResponse.status, 200);

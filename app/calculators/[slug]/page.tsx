@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/SafeLink";
 import { notFound } from "next/navigation";
 import { AdSlot } from "../../../components/AdSlot";
+import { PartnerOffer } from "../../../components/PartnerOffer";
 import { SiteFooter } from "../../../components/SiteFooter";
 import { SiteHeader } from "../../../components/SiteHeader";
 import { UniversalCalculator } from "../../../components/UniversalCalculator";
@@ -72,6 +73,7 @@ export default async function CalculatorPage({ params }: { params: Promise<{ slu
             <p className="source-note">Reviewed by the Numora Editorial Team. <Link href="/methodology">See our methodology.</Link></p>
           </aside>
         </section>
+        <div className="shell partner-offer-wrap"><PartnerOffer category={config.category} /></div>
         <section className="faq-section soft-section">
           <div className="shell faq-grid"><div><p className="eyebrow">Calculator FAQ</p><h2>Know what the number means.</h2></div><div className="faq-list">{config.faqs.map(([question, answer]) => <details key={question}><summary>{question}<span>+</span></summary><p>{answer}</p></details>)}</div></div>
         </section>

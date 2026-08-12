@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/SafeLink";
 import { notFound } from "next/navigation";
 import { AdSlot } from "../../../components/AdSlot";
+import { PartnerOffer } from "../../../components/PartnerOffer";
 import { SiteFooter } from "../../../components/SiteFooter";
 import { SiteHeader } from "../../../components/SiteHeader";
 import { getCalculator } from "../../../lib/calculators";
@@ -109,6 +110,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                   <Link className="button primary" href={`/calculators/${calculator.slug}`}>Open {calculator.shortTitle} calculator →</Link>
                 </section>
               ) : null}
+              {calculator ? <PartnerOffer category={calculator.category} /> : null}
               {relatedGuides.length > 0 ? (
                 <section className="guide-related">
                   <p className="eyebrow">Continue learning</p>
